@@ -1,0 +1,116 @@
+<html>
+<head>
+	<title>Good Weather</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.3/jquery.mobile-1.4.3.min.css" />
+	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.3/jquery.mobile-1.4.3.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/stylesheet.css">
+
+	<script type="text/javascript">
+
+		var icons = { "clear-day": "B",
+					  "clear-night": "C",
+					  "rain": "R",
+					  "snow": "G",
+					  "sleet": "X",
+					  "wind": "S",
+					  "fog": "N",
+					  "cloudy": "Y",
+					  "partly-cloudy-day": "H",
+					  "partly-cloudy-night": "I"
+					};
+
+		var cities = {
+						"Mayaguez" : { coords: {latitude: 18.201346 , longitude: -67.145152 }},
+						"Aguadilla" : { coords: {latitude: 18.427445 , longitude: -67.154070}},
+						"Rincon" : { coords: {latitude: 18.340216 , longitude: -67.250017 }},
+						"Isabela": { coords: {latitude: 18.456131 , longitude: -67.022630 }},
+						"Ponce": { coords: {latitude: 18.011077 , longitude: -66.614062 }},
+						"Humacao": { coords: {latitude: 18.149683 , longitude: -65.827385 }},
+						"San Juan": { coords: {latitude: 18.466334 , longitude: -66.105722}},
+						"Shangai": { coords: {latitude: 31.230416 , longitude: 121.473701}},
+						"Current Location": ""
+
+		}
+		function loadWeather(cityCoords){
+
+			var latlng = cityCoords.coords.latitude + "," + cityCoords.coords.longitude;
+			var forecastURL = "https://api.forecast.io/forecast/bef82d88236f44237ba2dfd3357b252a/"+latlng;
+
+			$.ajax({
+				url: forecastURL,
+				jsonpCallback: "jsonCallback",
+				contentType: "application/json",
+				dataType: 'jsonp',
+				success: function(json) {
+					console.log(json);
+					$("#current_temp").html(json.currently.temperature+"&#176;F");
+					$("#current_summary").html(json.currently.summary);
+					$("#current_temp").attr("data-icon", icons[json.currently.icon]);
+				},
+				error: function(e){
+					console.log(e);
+				}
+			});
+		}	
+
+		function loadCity(city){
+			$("#location").html(city);
+
+			if(city == "Current Location"){
+				if( navigator.geolocation ){
+					navigator.geolocation.getCurrentPosition(loadWeather, loadDefaultCity);
+				}else{
+					loadDefaultCity();
+				}
+			}else{
+				loadWeather(cities[city]);
+			}
+		}
+
+		function loadDefaultCity(){
+			loadCity("San Juan");
+		}
+		$(document).ready(function(){
+			loadCity("Ponce");
+
+			$("a.city").bind("click",function(){
+				loadCity($(this).html());
+			});
+		});
+	</script>
+
+</head>
+<body>
+
+<div data-role="page">
+	<div data-role="panel" id="left-panel">
+    <!-- panel content goes here -->
+    <ul data-theme="a" data-role="listview">
+    	<li data-icon="delete"><a href="#" data-rel="close">Close</a></li>
+    	<li data-theme="b" data-role="list-divider">Select a City</li>
+    	<li> <a href="#" class="city" data-rel="close">Current Location</a></li>
+    	<li> <a href="#" class="city" data-rel="close">Aguadilla</a></li>
+    	<li> <a href="#" class="city" data-rel="close">Rincon</a></li>
+    	<li> <a href="#" class="city" data-rel="close">Isabela</a></li>
+    	<li> <a href="#" class="city" data-rel="close">Mayaguez</a></li>
+    	<li> <a href="#" class="city" data-rel="close">Ponce</a></li>
+    	<li> <a href="#" class="city" data-rel="close">San Juan</a></li>
+    	<li> <a href="#" class="city" data-rel="close">Shangai</a></li>
+
+    </ul>
+	</div><!-- /panel -->
+	<div data-role="header" data-position="fixed" data-theme="a">
+		<h1>Good Weather</h1>
+		<a href="#left-panel" data-role="button" data-icon="bars" data-iconpos="notext" data-iconshadow="false">Menu</a>
+	</div>
+	<div data-role="content" class="content">
+		<h1 id="current_temp" class="icon" data-icon="B"></h1>
+		<p id="current_summary">Partly Cloudy</p>
+		<p id="location">Current Location</p>
+	</div>
+</div>
+
+</body>
+</html>
